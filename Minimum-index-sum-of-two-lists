@@ -1,0 +1,32 @@
+typedef struct {short i; char* s;} KV_t;
+
+int cmpFunc(const void* a, const void* b){ return strcmp(((KV_t*)a)->s, ((KV_t*)b)->s); }
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char** findRestaurant(char** list1, int list1Size, char** list2, int list2Size, int* returnSize) {
+    /* store lists with its index into new arrays */
+    KV_t kv1[list1Size], kv2[list2Size];
+    for(short i=0; i<list1Size; i++){ kv1[i]=(KV_t){i, list1[i]}; }
+    for(short i=0; i<list2Size; i++){ kv2[i]=(KV_t){i, list2[i]}; }
+
+    /* sort each arrays */
+    qsort(kv1, list1Size, sizeof(KV_t), cmpFunc);
+    qsort(kv2, list2Size, sizeof(KV_t), cmpFunc);
+
+    /* find common string with least index sum */
+    short temp=list1Size<=list2Size?list1Size:list2Size, min=list1Size+list2Size;
+    char* commons[temp];
+    for(short i=0,j=0; i<list1Size&&j<list2Size; i++,j++) {
+        temp=strcmp(kv1[i].s, kv2[j].s);
+        if(temp<0){ j--; continue; }else if(temp>0){ i--; continue; }
+        if((temp=kv1[i].i+kv2[j].i)==min){ commons[(*returnSize)++]=kv1[i].s; }
+        else if(temp<min){ commons[(*returnSize=1)-1]=kv1[i].s; min=temp; }
+    }
+
+    /* return the result */
+    char** result=malloc(*returnSize*sizeof(char*));
+    for(short i=0; i<*returnSize; i++){ result[i]=commons[i]; }
+    return result;
+}
